@@ -8,8 +8,8 @@ export default function withSearch(Table) {
       this.state = { search: "" };
     }
 
-    handleChange(val) {
-      this.setState({ search: val });
+    handleChange(e) {
+      this.setState({ search: e.target.value });
     }
 
     render() {
@@ -28,7 +28,10 @@ export default function withSearch(Table) {
       }
       return (
         <Table data={_data} {...otherProps}>
-          <Search onChange={this.handleChange.bind(this)} />
+          <Search
+            onChange={this.handleChange.bind(this)}
+            style={{ marginBottom: "1rem" }}
+          />
         </Table>
       );
     }
