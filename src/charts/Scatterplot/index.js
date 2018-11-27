@@ -1,6 +1,7 @@
 import React from "react";
 import { Group } from "@vx/group";
 import { GlyphCircle } from "@vx/glyph";
+import { Text } from "@vx/text";
 import { scaleLinear, scaleOrdinal } from "@vx/scale";
 import { AxisLeft, AxisBottom } from "@vx/axis";
 import { max, extent } from "d3-array";
@@ -12,7 +13,7 @@ import { ParentSize } from "@vx/responsive";
 const margin = {
   top: 10,
   bottom: 80,
-  left: 120,
+  left: 65,
   right: 10
 };
 
@@ -21,151 +22,183 @@ let tooltipTimeout;
 export default withTooltip(props => {
   const { height, data, tooltipData, title, x, y } = props;
 
+  const annotationPos = name => {
+    switch (name) {
+      case "Miami":
+        return [-20, -20];
+      case "New York":
+        return [10, -5];
+      case "San Francisco":
+        return [-80, 10];
+      case "Boston":
+        return [-40, -10];
+      default:
+        return [10, -5];
+    }
+  };
+
   return (
-    <ParentSize>
-      {({ width }) => {
-        if (width < 100) return null;
+    <div style={{ maxWidth: 850 }}>
+      <ParentSize>
+        {({ width }) => {
+          if (width < 100) return null;
 
-        const xMax = width - margin.left - margin.right;
-        const yMaxRange = height - margin.top - margin.bottom;
-        const yMaxDomain = max(data, y);
-        const xMaxDomain = max(data, x);
+          const xMax = width - margin.left - margin.right;
+          const yMaxRange = height - margin.top - margin.bottom;
+          const yMaxDomain = max(data, y);
+          const xMaxDomain = max(data, x);
 
-        const xScale = scaleLinear({
-          domain: [0, xMaxDomain],
-          range: [0, xMax],
-          clamp: true
-        });
+          const xScale = scaleLinear({
+            domain: [0, xMaxDomain],
+            range: [0, xMax],
+            clamp: true
+          });
 
-        const yScale = scaleLinear({
-          domain: [0, yMaxDomain],
-          range: [yMaxRange, margin.top],
-          clamp: true
-        });
+          const yScale = scaleLinear({
+            domain: [0, yMaxDomain],
+            range: [yMaxRange, margin.top],
+            clamp: true
+          });
 
-        return (
-          <div>
-            <svg width={width} height={height}>
-              <AxisLeft
-                scale={yScale}
-                left={margin.left}
-                stroke={"rgba(0,0,0,0.15)"}
-                hideTicks={true}
-                label="Population"
-                numTicks={6}
-                tickLabelProps={() => ({
-                  fontFamily: "Circular",
-                  fontSize: "11px",
-                  textAnchor: "end",
-                  fill: "#333"
-                })}
-                labelProps={{
-                  dx: "-3em",
-                  textAnchor: "start",
-                  fill: "#333",
-                  fontSize: "14px",
-                  fontWeight: "bold"
-                }}
-              />
-              <AxisBottom
-                scale={xScale}
-                top={height - margin.top - margin.bottom}
-                left={margin.left}
-                stroke={"rgba(0,0,0,0.15)"}
-                hideTicks={true}
-                label="Number of Connections"
-                numTicks={30}
-                tickLabelProps={() => ({
-                  fontFamily: "Circular",
-                  fontSize: "11px",
-                  dy: "1.5em",
-                  fill: "#333",
-                  textAnchor: "middle"
-                })}
-                tickTransform={`translate(0,10px)`}
-                labelProps={{
-                  dy: "3em",
-                  textAnchor: "end",
-                  fill: "#333",
-                  fontSize: "14px",
-                  fontWeight: "bold"
-                }}
-              />
-              <Group
-                onTouchStart={() => event => {
-                  if (tooltipTimeout) clearTimeout(tooltipTimeout);
-                  props.hideTooltip();
-                }}
-                left={margin.left}
-              >
-                <AnnotationCalloutCircle
-                  x={width / 17}
-                  y={688}
-                  dx={15}
-                  dy={-309}
-                  color={"#333"}
-                  editMode={false}
-                  note={{
-                    label:
-                      "Most under-networked MSAs have populations of under 2M",
-                    lineType: "horizontal"
+          return (
+            <div>
+              <svg width={width} height={height}>
+                <AxisLeft
+                  scale={yScale}
+                  left={margin.left}
+                  stroke={"rgba(0,0,0,0.15)"}
+                  hideTicks={true}
+                  label="Metropolitan/Micropolitan Area Population"
+                  numTicks={6}
+                  tickFormat={d => format(".2s")(d)}
+                  tickLabelProps={() => ({
+                    fontFamily: "Circular",
+                    fontSize: "11px",
+                    textAnchor: "end",
+                    fill: "#333"
+                  })}
+                  labelProps={{
+                    dx: "-0.5em",
+                    textAnchor: "middle",
+                    fill: "#333",
+                    fontSize: "14px",
+                    fontWeight: "bold"
                   }}
-                  subject={{ radius: width / 18, radiusPadding: 5 }}
                 />
-                {data.map((point, i) => {
-                  return (
-                    <GlyphCircle
-                      className="dot"
-                      key={`point-${i}`}
-                      stroke={"#4C81DB"}
-                      fill="#fff"
-                      fillOpacity={0.2}
-                      left={xScale(x(point))}
-                      top={yScale(y(point))}
-                      style={{ cursor: "pointer" }}
-                      size={60}
-                      onMouseEnter={() => event => {}}
-                      onTouchStart={() => event => {}}
-                      onMouseLeave={() => event => {}}
-                    />
-                  );
-                })}
-              </Group>
-            </svg>
-            {props.tooltipOpen && (
-              <Tooltip
-                left={props.tooltipLeft}
-                top={props.tooltipTop}
-                style={{ borderRadius: 0 }}
-              >
-                <div>
-                  <h4
-                    className="margin-top-0 margin-bottom-10"
-                    style={{
-                      borderBottom: "1px solid rgba(0,0,0,0.15)",
-                      paddingBottom: "5px"
+                <AxisBottom
+                  scale={xScale}
+                  top={height - margin.top - margin.bottom}
+                  left={margin.left}
+                  stroke={"rgba(0,0,0,0.15)"}
+                  hideTicks={true}
+                  label="Number of connections in each Metro Area"
+                  numTicks={width < 600 ? 10 : 30}
+                  tickLabelProps={() => ({
+                    fontFamily: "Circular",
+                    fontSize: "11px",
+                    dy: "1.5em",
+                    fill: "#333",
+                    textAnchor: "middle"
+                  })}
+                  tickTransform={`translate(0,10px)`}
+                  labelProps={{
+                    dy: "3.5em",
+                    textAnchor: "middle",
+                    fill: "#333",
+                    fontSize: "14px",
+                    fontWeight: "bold"
+                  }}
+                />
+                <Group
+                  onTouchStart={() => event => {
+                    if (tooltipTimeout) clearTimeout(tooltipTimeout);
+                    props.hideTooltip();
+                  }}
+                  left={margin.left}
+                >
+                  <AnnotationCalloutCircle
+                    x={width / 16.5}
+                    y={495}
+                    dx={20}
+                    dy={-250}
+                    color={"#333"}
+                    editMode={false}
+                    note={{
+                      label:
+                        "Most under-networked MSAs have populations of under 2M",
+                      lineType: "horizontal"
                     }}
-                  >
-                    {tooltipData.occupation}
-                  </h4>
-                  <h5 className="margin-5">% Women</h5>
-                  <h6 className="margin-top-0 margin-bottom-10">
-                    {xFormat(tooltipData.percent_women)}
-                  </h6>
-                  <h5 className="margin-5">Median Earning</h5>
-                  <h6 className="margin-top-0 margin-bottom-10">
-                    {yFormat(tooltipData.median_earning)}
-                  </h6>
-                  <h5 className="margin-5"># of Workers</h5>
-                  <h6 className="margin-top-0 margin-bottom-10">
-                    {nFormat(tooltipData.number_full_time)}
-                  </h6>
-                </div>
-              </Tooltip>
-            )}
-          </div>
-        );
-      }}
-    </ParentSize>
+                    subject={{ radius: width / 16, radiusPadding: 5 }}
+                  />
+                  {data.map((point, i) => {
+                    return (
+                      <Group>
+                        <GlyphCircle
+                          className="dot"
+                          key={`point-${i}`}
+                          stroke={"#4C81DB"}
+                          fill="transparent"
+                          fillOpacity={0.2}
+                          left={xScale(x(point))}
+                          top={yScale(y(point))}
+                          style={{ cursor: "pointer" }}
+                          size={60}
+                          onMouseEnter={() => event => {}}
+                          onTouchStart={() => event => {}}
+                          onMouseLeave={() => event => {}}
+                        />
+                        {point.alt_name && (
+                          <Text
+                            verticalAnchor="start"
+                            x={xScale(x(point))}
+                            dx={annotationPos(point.alt_name)[0]}
+                            dy={annotationPos(point.alt_name)[1]}
+                            y={yScale(y(point))}
+                            fontSize="12px"
+                          >
+                            {point.alt_name}
+                          </Text>
+                        )}
+                      </Group>
+                    );
+                  })}
+                </Group>
+              </svg>
+              {props.tooltipOpen && (
+                <Tooltip
+                  left={props.tooltipLeft}
+                  top={props.tooltipTop}
+                  style={{ borderRadius: 0 }}
+                >
+                  <div>
+                    <h4
+                      className="margin-top-0 margin-bottom-10"
+                      style={{
+                        borderBottom: "1px solid rgba(0,0,0,0.15)",
+                        paddingBottom: "5px"
+                      }}
+                    >
+                      {tooltipData.occupation}
+                    </h4>
+                    <h5 className="margin-5">% Women</h5>
+                    <h6 className="margin-top-0 margin-bottom-10">
+                      {xFormat(tooltipData.percent_women)}
+                    </h6>
+                    <h5 className="margin-5">Median Earning</h5>
+                    <h6 className="margin-top-0 margin-bottom-10">
+                      {yFormat(tooltipData.median_earning)}
+                    </h6>
+                    <h5 className="margin-5"># of Workers</h5>
+                    <h6 className="margin-top-0 margin-bottom-10">
+                      {nFormat(tooltipData.number_full_time)}
+                    </h6>
+                  </div>
+                </Tooltip>
+              )}
+            </div>
+          );
+        }}
+      </ParentSize>
+    </div>
   );
 });
