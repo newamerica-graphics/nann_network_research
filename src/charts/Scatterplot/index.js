@@ -1,4 +1,5 @@
 import React from "react";
+import ChartContainer from "../../components/ChartContainer";
 import { Group } from "@vx/group";
 import { GlyphCircle } from "@vx/glyph";
 import { Text } from "@vx/text";
@@ -6,22 +7,19 @@ import { scaleLinear, scaleOrdinal } from "@vx/scale";
 import { AxisLeft, AxisBottom } from "@vx/axis";
 import { max, extent } from "d3-array";
 import { format } from "d3-format";
-import { withTooltip, Tooltip } from "@vx/tooltip";
 import { AnnotationCalloutCircle } from "react-annotation";
 import { ParentSize } from "@vx/responsive";
 
 const margin = {
   top: 10,
-  bottom: 80,
+  bottom: 60,
   left: 65,
   right: 10
 };
 
 let tooltipTimeout;
 
-export default withTooltip(props => {
-  const { height, data, tooltipData, title, x, y } = props;
-
+export default ({ width, height, data, tooltipData, title, source, x, y }) => {
   const annotationPos = name => {
     switch (name) {
       case "Miami":
@@ -38,7 +36,12 @@ export default withTooltip(props => {
   };
 
   return (
-    <div style={{ maxWidth: 850 }}>
+    <ChartContainer
+      title={title}
+      source={source}
+      maxWidth={width}
+      height={height}
+    >
       <ParentSize>
         {({ width }) => {
           if (width < 100) return null;
@@ -61,144 +64,110 @@ export default withTooltip(props => {
           });
 
           return (
-            <div>
-              <svg width={width} height={height}>
-                <AxisLeft
-                  scale={yScale}
-                  left={margin.left}
-                  stroke={"rgba(0,0,0,0.15)"}
-                  hideTicks={true}
-                  label="Metropolitan/Micropolitan Area Population"
-                  numTicks={6}
-                  tickFormat={d => format(".2s")(d)}
-                  tickLabelProps={() => ({
-                    fontFamily: "Circular",
-                    fontSize: "11px",
-                    textAnchor: "end",
-                    fill: "#333"
-                  })}
-                  labelProps={{
-                    dx: "-0.5em",
-                    textAnchor: "middle",
-                    fill: "#333",
-                    fontSize: "14px",
-                    fontWeight: "bold"
+            <svg width={width} height={height}>
+              <AxisLeft
+                scale={yScale}
+                left={margin.left}
+                stroke={"rgba(0,0,0,0.15)"}
+                hideTicks={true}
+                label="Metropolitan/Micropolitan Area Population"
+                numTicks={6}
+                tickFormat={d => format(".2s")(d).replace(".0", "")}
+                tickLabelProps={() => ({
+                  fontFamily: "Circular",
+                  fontSize: "11px",
+                  textAnchor: "end",
+                  fill: "#333"
+                })}
+                labelProps={{
+                  dx: "-0.5em",
+                  textAnchor: "middle",
+                  fill: "#333",
+                  fontSize: "14px",
+                  fontWeight: "bold"
+                }}
+              />
+              <AxisBottom
+                scale={xScale}
+                top={height - margin.top - margin.bottom}
+                left={margin.left}
+                stroke={"rgba(0,0,0,0.15)"}
+                hideTicks={true}
+                label="Number of connections in each Metro Area"
+                numTicks={width < 600 ? 5 : 20}
+                tickLabelProps={() => ({
+                  fontFamily: "Circular",
+                  fontSize: "11px",
+                  dy: "1.5em",
+                  fill: "#333",
+                  textAnchor: "middle"
+                })}
+                tickTransform={`translate(0,10px)`}
+                labelProps={{
+                  dy: "3.5em",
+                  textAnchor: "middle",
+                  fill: "#333",
+                  fontSize: "14px",
+                  fontWeight: "bold"
+                }}
+              />
+              <Group
+                onTouchStart={() => event => {
+                  if (tooltipTimeout) clearTimeout(tooltipTimeout);
+                  props.hideTooltip();
+                }}
+                left={margin.left}
+              >
+                <AnnotationCalloutCircle
+                  x={width / 17}
+                  y={395}
+                  dx={40}
+                  dy={-200}
+                  color={"#333"}
+                  editMode={false}
+                  note={{
+                    label:
+                      "Most under-networked MSAs have populations of under 2M",
+                    lineType: null,
+                    align: null,
+                    padding: 10
                   }}
+                  connector={{ type: "line" }}
+                  subject={{ radius: width / 16.5, radiusPadding: 5 }}
                 />
-                <AxisBottom
-                  scale={xScale}
-                  top={height - margin.top - margin.bottom}
-                  left={margin.left}
-                  stroke={"rgba(0,0,0,0.15)"}
-                  hideTicks={true}
-                  label="Number of connections in each Metro Area"
-                  numTicks={width < 600 ? 10 : 30}
-                  tickLabelProps={() => ({
-                    fontFamily: "Circular",
-                    fontSize: "11px",
-                    dy: "1.5em",
-                    fill: "#333",
-                    textAnchor: "middle"
-                  })}
-                  tickTransform={`translate(0,10px)`}
-                  labelProps={{
-                    dy: "3.5em",
-                    textAnchor: "middle",
-                    fill: "#333",
-                    fontSize: "14px",
-                    fontWeight: "bold"
-                  }}
-                />
-                <Group
-                  onTouchStart={() => event => {
-                    if (tooltipTimeout) clearTimeout(tooltipTimeout);
-                    props.hideTooltip();
-                  }}
-                  left={margin.left}
-                >
-                  <AnnotationCalloutCircle
-                    x={width / 16.5}
-                    y={495}
-                    dx={20}
-                    dy={-250}
-                    color={"#333"}
-                    editMode={false}
-                    note={{
-                      label:
-                        "Most under-networked MSAs have populations of under 2M",
-                      lineType: "horizontal"
-                    }}
-                    subject={{ radius: width / 16, radiusPadding: 5 }}
-                  />
-                  {data.map((point, i) => {
-                    return (
-                      <Group>
-                        <GlyphCircle
-                          className="dot"
-                          key={`point-${i}`}
-                          stroke={"#4C81DB"}
-                          fill="transparent"
-                          fillOpacity={0.2}
-                          left={xScale(x(point))}
-                          top={yScale(y(point))}
-                          style={{ cursor: "pointer" }}
-                          size={60}
-                          onMouseEnter={() => event => {}}
-                          onTouchStart={() => event => {}}
-                          onMouseLeave={() => event => {}}
-                        />
-                        {point.alt_name && (
-                          <Text
-                            verticalAnchor="start"
-                            x={xScale(x(point))}
-                            dx={annotationPos(point.alt_name)[0]}
-                            dy={annotationPos(point.alt_name)[1]}
-                            y={yScale(y(point))}
-                            fontSize="12px"
-                          >
-                            {point.alt_name}
-                          </Text>
-                        )}
-                      </Group>
-                    );
-                  })}
-                </Group>
-              </svg>
-              {props.tooltipOpen && (
-                <Tooltip
-                  left={props.tooltipLeft}
-                  top={props.tooltipTop}
-                  style={{ borderRadius: 0 }}
-                >
-                  <div>
-                    <h4
-                      className="margin-top-0 margin-bottom-10"
-                      style={{
-                        borderBottom: "1px solid rgba(0,0,0,0.15)",
-                        paddingBottom: "5px"
-                      }}
-                    >
-                      {tooltipData.occupation}
-                    </h4>
-                    <h5 className="margin-5">% Women</h5>
-                    <h6 className="margin-top-0 margin-bottom-10">
-                      {xFormat(tooltipData.percent_women)}
-                    </h6>
-                    <h5 className="margin-5">Median Earning</h5>
-                    <h6 className="margin-top-0 margin-bottom-10">
-                      {yFormat(tooltipData.median_earning)}
-                    </h6>
-                    <h5 className="margin-5"># of Workers</h5>
-                    <h6 className="margin-top-0 margin-bottom-10">
-                      {nFormat(tooltipData.number_full_time)}
-                    </h6>
-                  </div>
-                </Tooltip>
-              )}
-            </div>
+                {data.map((point, i) => {
+                  return (
+                    <Group>
+                      <GlyphCircle
+                        className="dot"
+                        key={`point-${i}`}
+                        stroke={"#4C81DB"}
+                        fill="transparent"
+                        fillOpacity={0.2}
+                        left={xScale(x(point))}
+                        top={yScale(y(point))}
+                        size={60}
+                      />
+                      {point.alt_name && (
+                        <Text
+                          verticalAnchor="start"
+                          x={xScale(x(point))}
+                          dx={annotationPos(point.alt_name)[0]}
+                          dy={annotationPos(point.alt_name)[1]}
+                          y={yScale(y(point))}
+                          fontSize="12px"
+                        >
+                          {point.alt_name}
+                        </Text>
+                      )}
+                    </Group>
+                  );
+                })}
+              </Group>
+            </svg>
           );
         }}
       </ParentSize>
-    </div>
+    </ChartContainer>
   );
-});
+};

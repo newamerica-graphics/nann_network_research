@@ -36,7 +36,12 @@ const settings = {
         columns={columns}
         data={data.msa}
         showPagination={true}
-        title={"Metro Areas Ranked by Connectivity"}
+        title={
+          data.meta.filter(chart => chart.id === "viz__datatable")[0].title
+        }
+        source={
+          data.meta.filter(chart => chart.id === "viz__datatable")[0].source
+        }
       />,
       el
     );
@@ -51,7 +56,14 @@ const settings = {
         }))}
         x={x => x.connections}
         y={y => y.population}
-        height={600}
+        width={650}
+        height={500}
+        title={
+          data.meta.filter(chart => chart.id === "viz__scatterplot")[0].title
+        }
+        source={
+          data.meta.filter(chart => chart.id === "viz__scatterplot")[0].source
+        }
       />,
       el
     );
@@ -59,11 +71,13 @@ const settings = {
   viz__line: el => {
     ReactDOM.render(
       <Line
-        width={600}
+        width={650}
         height={400}
         x={d => d.year}
         y={d => +d.cumulative}
         data={data.line}
+        title={data.meta.filter(chart => chart.id === "viz__line")[0].title}
+        source={data.meta.filter(chart => chart.id === "viz__line")[0].source}
       />,
       el
     );
