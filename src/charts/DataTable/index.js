@@ -27,7 +27,7 @@ class DataTable extends React.Component {
         title={title}
         subtitle={subtitle}
         source={source}
-        width={1200}
+        maxWidth={1200}
       >
         {this.props.children}
         <ReactTable

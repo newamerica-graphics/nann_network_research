@@ -7,18 +7,15 @@ const Source = props => (
   <span className="chart__source">Source: {props.source}</span>
 );
 const ChartContainer = props => (
-  <div className="chart">
-    <div className="chart__meta-container">
+  <div className={`chart ${props.maxWidth === 1200 ? 'chart-full' : ''}`}>
+    <div className="chart__meta-container" style={{maxWidth: props.maxWidth, margin: "auto"}}>
       {props.title ? <Title title={props.title} /> : null}
       {props.subtitle ? <Subtitle subtitle={props.subtitle} /> : null}
     </div>
-    <div
-      className="chart__figure"
-      style={{ height: props.height, maxWidth: props.maxWidth, margin: "auto" }}
-    >
+    <div className="chart__figure" style={{ maxWidth: props.maxWidth, margin: "auto", height: props.height}}>
       {props.children}
     </div>
-    <div className="chart__meta-container">
+    <div className="chart__meta-container" style={{maxWidth: props.maxWidth, margin: "auto"}}>
       {props.source ? <Source source={props.source} /> : null}
     </div>
   </div>
