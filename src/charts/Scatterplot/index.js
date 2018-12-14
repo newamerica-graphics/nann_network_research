@@ -12,7 +12,7 @@ import { ParentSize } from "@vx/responsive";
 
 const margin = {
   top: 10,
-  bottom: 60,
+  bottom: 55,
   left: 65,
   right: 10
 };
@@ -23,13 +23,23 @@ export default ({ width, height, data, tooltipData, title, source, x, y }) => {
   const annotationPos = name => {
     switch (name) {
       case "Miami":
-        return [-20, -20];
+        return [-20, -17];
       case "New York":
         return [10, -5];
       case "San Francisco":
-        return [-80, 10];
+        return [-74, 8];
       case "Boston":
-        return [-40, -10];
+        return [-45, -10];
+      case "Minneapolis":
+        return [-5, 10];
+      case "Phoenix":
+        return [-22, -18];
+      case "Chicago":
+        return [-55, -5];
+      case "Seattle":
+        return [8, -7];
+      case "Washington DC":
+        return [8, -5];
       default:
         return [10, -5];
     }
@@ -120,14 +130,14 @@ export default ({ width, height, data, tooltipData, title, source, x, y }) => {
               >
                 <AnnotationCalloutCircle
                   x={width / 17}
-                  y={395}
+                  y={416}
                   dx={40}
                   dy={-200}
                   color={"#333"}
                   editMode={false}
                   note={{
                     label:
-                      "Most under-networked MSAs have populations of under 2M",
+                      "Most lightly networked MSAs have populations of under 2M",
                     lineType: null,
                     align: null,
                     padding: 10
