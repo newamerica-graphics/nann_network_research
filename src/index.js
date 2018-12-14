@@ -20,6 +20,11 @@ const settings = {
         minWidth: 200
       },
       {
+        Header: "Ranking",
+        accessor: "rank",
+        sortMethod: (a, b) => +a - +b
+      },
+      {
         Header: "Number of Connections",
         accessor: "connections",
         sortMethod: (a, b) => +a - +b
